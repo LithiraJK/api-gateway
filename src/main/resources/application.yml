@@ -1,0 +1,142 @@
+# =====================================================
+# Tripvisito — API Gateway
+# Port    : 8080
+# Runtime : Spring Cloud Gateway (WebFlux / Netty)
+#
+# This file contains local bootstrap configuration.
+# Additional/override properties are fetched from
+# config-server at startup (api-gateway.yml).
+# =====================================================
+
+server:
+  port: 8080
+
+logging:
+  file:
+    name: d:/IJSE/4th SEM/Enterprise Cloud Architecture/ECA-Final-Project/api-gateway.log
+
+spring:
+  application:
+    name: api-gateway
+
+  # ── Config Server Import ─────────────────────────
+  # "optional:" means startup continues even if config-server is not yet up.
+  # Remove "optional:" in production to enforce strict config dependency.
+  config:
+    import: optional:configserver:http://localhost:8888
+
+  # ── Spring Cloud Gateway ─────────────────────────
+  cloud:
+    gateway:
+      server:
+        webflux:
+          # Disable auto-discovery routes (we define routes explicitly below
+          # to keep full control over path mappings and filters)
+          discovery:
+            locator:
+              enabled: false
+
+          # ── Route Definitions ───────────────────────
+          # Each route forwards matching requests to the named Eureka service
+          # using a load-balanced lb:// URI.
+          routes:
+
+            # ─── User Service ──────────────────────────────────────────
+            # Handles: auth, user management, and admin dashboard stats
+            - id: user-service-auth
+              uri: lb://USER-SERVICE
+              predicates:
+                - Path=/api/v1/auth/**
+
+            - id: user-service-users
+              uri: lb://USER-SERVICE
+              predicates:
+                - Path=/api/v1/users/**
+
+            - id: user-service-dashboard
+              uri: lb://USER-SERVICE
+              predicates:
+                - Path=/api/v1/dashboard/**
+
+            # ─── Trip Service ──────────────────────────────────────────
+            # Handles: AI trip generation, CRUD, GCP image uploads
+            - id: trip-service
+              uri: lb://TRIP-SERVICE
+              predicates:
+                - Path=/api/v1/trip/**
+
+            # ─── Payment Service ───────────────────────────────────────
+            # Handles: Stripe checkout sessions, webhook, booking history
+            - id: payment-service
+              uri: lb://PAYMENT-SERVICE
+              predicates:
+                - Path=/api/v1/payment/**
+
+            # ─── Review Service ────────────────────────────────────────
+            # Handles: trip reviews, ratings
+            - id: review-service
+              uri: lb://REVIEW-SERVICE
+              predicates:
+                - Path=/api/v1/reviews/**
+
+          # ── Global CORS Policy ──────────────────────────────────────
+          # Centralised here so individual services don't need their own CORS config.
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                # Add your production frontend domain here when deploying to GCP
+                allowedOriginPatterns:
+                  - "http://localhost:5173"
+                  - "https://*.tripvisito.com"
+                allowedMethods:
+                  - GET
+                  - POST
+                  - PUT
+                  - DELETE
+                  - OPTIONS
+                allowedHeaders:
+                  - "*"
+                exposedHeaders:
+                  - Authorization
+                allowCredentials: true
+                maxAge: 3600
+
+# ── Eureka Client ────────────────────────────────────
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    fetch-registry: true
+    register-with-eureka: true
+    # Refresh client every 5s (default is 30s) for faster route resolution in dev
+    registry-fetch-interval-seconds: 5
+  instance:
+    # Use a unique instance ID to prevent conflicts when running multiple instances
+    instance-id: ${spring.application.name}:${random.uuid}
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
+
+# ── JWT ─────────────────────────────────────────────
+# Secret MUST match the one used by user-service to sign tokens.
+# Override via environment variable: JWT_SECRET=<value>
+jwt:
+  secret: ${JWT_SECRET:your-super-secret-jwt-key-change-this-in-production-min-32-chars}
+
+# ── Actuator ─────────────────────────────────────────
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, gateway, routes
+  endpoint:
+    health:
+      show-details: always
+    gateway:
+      access: read-only
+
+info:
+  app:
+    name: Tripvisito API Gateway
+    description: Single entry-point with JWT auth filter and Eureka-based routing
+    version: 1.0.0
