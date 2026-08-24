@@ -88,17 +88,22 @@ spring:
                 allowedOriginPatterns:
                   - "http://localhost:5173"
                   - "https://*.tripvisito.com"
+                  - "http://136.68.40.209"
+                  - "http://136.68.40.209:*"
+                  - "http://*.storage.googleapis.com"
+                  - "*"
                 allowedMethods:
                   - GET
                   - POST
                   - PUT
                   - DELETE
                   - OPTIONS
+                  - PATCH
                 allowedHeaders:
                   - "*"
                 exposedHeaders:
                   - Authorization
-                allowCredentials: true
+                allowCredentials: false
                 maxAge: 3600
 
 # ── Eureka Client ────────────────────────────────────
