@@ -14,17 +14,11 @@ import org.springframework.web.cors.reactive.CorsConfigurationSource;
 @EnableWebFluxSecurity
 public class SecurityConfig {
 
-    private final CorsConfigurationSource corsConfigurationSource;
-
-    public SecurityConfig(CorsConfigurationSource corsConfigurationSource) {
-        this.corsConfigurationSource = corsConfigurationSource;
-    }
-
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
         return http
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
-            .cors(cors -> cors.configurationSource(corsConfigurationSource))
+            .cors(ServerHttpSecurity.CorsSpec::disable)
             .authorizeExchange(exchanges -> exchanges
                 .pathMatchers(HttpMethod.OPTIONS).permitAll()
                 .anyExchange().permitAll()
