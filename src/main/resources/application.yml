@@ -43,25 +43,25 @@ spring:
         - id: user-service
           uri: lb://USER-SERVICE
           predicates:
-            - Path=/auth/**, /user/**, /users/**, /api/users/**
+            - Path=/auth/**, /user/**, /users/**, /api/users/**, /api/v1/auth/**, /api/v1/users/**, /api/v1/dashboard/**, /dashboard/**
 
         # ─── Trip Service ──────────────────────────────────────────
         - id: trip-service
           uri: lb://TRIP-SERVICE
           predicates:
-            - Path=/trip/**, /trips/**, /api/trips/**
+            - Path=/trip/**, /trips/**, /api/trips/**, /api/v1/trip/**
 
         # ─── Payment Service ───────────────────────────────────────
         - id: payment-service
           uri: lb://PAYMENT-SERVICE
           predicates:
-            - Path=/payment/**, /payments/**, /api/payments/**
+            - Path=/payment/**, /payments/**, /api/payments/**, /api/v1/payment/**, /api/v1/payments/**
 
         # ─── Review Service ────────────────────────────────────────
         - id: review-service
           uri: lb://REVIEW-SERVICE
           predicates:
-            - Path=/review/**, /reviews/**, /api/reviews/**
+            - Path=/review/**, /reviews/**, /api/reviews/**, /api/v1/reviews/**, /api/v1/review/**
 
       # ── Global CORS Policy ──────────────────────────────────────
       # Centralised here so individual services don't need their own CORS config.
