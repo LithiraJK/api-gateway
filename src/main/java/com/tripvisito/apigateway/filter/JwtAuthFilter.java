@@ -93,6 +93,12 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
         final String path   = exchange.getRequest().getURI().getPath();
         final String method = exchange.getRequest().getMethod().name();
 
+        // 0. Pass-through: preflight OPTIONS requests (required for CORS)
+        if ("OPTIONS".equalsIgnoreCase(method)) {
+            log.debug("[Gateway] OPTIONS preflight request — skipping auth: {}", path);
+            return chain.filter(exchange);
+        }
+
         // 1. Pass-through: fully public paths (all methods)
         boolean isFullyPublic = FULLY_PUBLIC_PATHS.stream()
                 .anyMatch(p -> PATH_MATCHER.match(p, path));
