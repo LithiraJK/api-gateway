@@ -14,6 +14,9 @@ server:
 logging:
   file:
     name: d:/IJSE/4th SEM/Enterprise Cloud Architecture/ECA-Final-Project/api-gateway.log
+  level:
+    org.springframework.security: DEBUG
+    org.springframework.web.cors: DEBUG
 
 spring:
   application:
