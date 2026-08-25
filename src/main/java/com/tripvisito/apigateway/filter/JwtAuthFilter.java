@@ -67,13 +67,13 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
      */
     private static final List<String> FULLY_PUBLIC_PATHS = List.of(
             // Auth endpoints (no token needed to obtain a token!)
-            "/api/v1/auth/register",
-            "/api/v1/auth/login",
-            "/api/v1/auth/google-login",
-            "/api/v1/auth/refresh",
+            "/auth/register", "/api/auth/register", "/api/v1/auth/register",
+            "/auth/login", "/api/auth/login", "/api/v1/auth/login",
+            "/auth/google-login", "/api/auth/google-login", "/api/v1/auth/google-login",
+            "/auth/refresh", "/api/auth/refresh", "/api/v1/auth/refresh",
 
             // Stripe webhook — must receive raw body from Stripe (no auth header)
-            "/api/v1/payment/stripe-webhook"
+            "/payment/stripe-webhook", "/api/payment/stripe-webhook", "/api/v1/payment/stripe-webhook"
     );
 
     /**
@@ -81,9 +81,13 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
      * Uses Ant-style patterns — "/**" matches any suffix.
      */
     private static final List<String> PUBLIC_GET_PATTERNS = List.of(
-            "/api/v1/trip/all",          // GET all trips (paginated)
-            "/api/v1/trip/*",            // GET trip by ID  (single segment wildcard)
-            "/api/v1/reviews/*"          // GET reviews for a specific trip
+            "/trip/all", "/api/trip/all", "/api/v1/trip/all",
+            "/trip/*", "/api/trip/*", "/api/v1/trip/*",
+            "/trips", "/api/trips", "/api/v1/trips",
+            "/trips/**", "/api/trips/**", "/api/v1/trips/**",
+            "/reviews", "/api/reviews", "/api/v1/reviews",
+            "/reviews/**", "/api/reviews/**", "/api/v1/reviews/**",
+            "/review/**", "/api/review/**", "/api/v1/review/**"
     );
 
     // ── Filter Logic ────────────────────────────────────────────────────────
@@ -109,7 +113,10 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
 
         // 2. Pass-through: public GET-only paths
         boolean isPublicGet = "GET".equalsIgnoreCase(method)
+                && !"/trip/user-trips".equalsIgnoreCase(path)
                 && !"/api/v1/trip/user-trips".equalsIgnoreCase(path)
+                && !"/reviews/user".equalsIgnoreCase(path)
+                && !"/review/user".equalsIgnoreCase(path)
                 && !"/api/v1/reviews/user".equalsIgnoreCase(path)
                 && PUBLIC_GET_PATTERNS.stream()
                         .anyMatch(pattern -> PATH_MATCHER.match(pattern, path));
