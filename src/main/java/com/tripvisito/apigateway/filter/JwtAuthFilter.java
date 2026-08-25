@@ -35,43 +35,14 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
             return chain.filter(exchange);
         }
 
-        // Initialize dummy user headers based on path
-        String userId = "3";
-        String userName = "John Doe";
-        String userEmail = "john@tripvisito.com";
-        String userProfileImg = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80";
-        String userRoles = "[USER]";
+        // Inject default headers:
+        String userId = "1";
+        String userName = "Super Admin";
+        String userEmail = "admin@tripvisito.com";
+        String userProfileImg = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80";
+        String userRoles = "ROLE_ADMIN,ROLE_SUPERADMIN,ROLE_USER";
 
-        // If the path suggests admin operations, default to Super Admin
-        if (path.contains("admin") || path.contains("status") || path.contains("delete") ||
-            path.contains("register/new-user") || path.contains("all-bookings") || 
-            path.contains("dashboard") || path.contains("users") || path.contains("all-trips")) {
-            userId = "1";
-            userName = "Super Admin";
-            userEmail = "superadmin@tripvisito.com";
-            userProfileImg = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80";
-            userRoles = "[SUPERADMIN, ADMIN, USER]";
-        }
-
-        // Try to extract identity from Authorization header if present
-        String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
-            try {
-                // Parse claims without failing if the signature/expiration is invalid
-                Claims claims = jwtUtil.extractAllClaims(token);
-                userId = claims.getSubject();
-                userName = getClaimOrFallback(claims, "name", userName);
-                userEmail = getClaimOrFallback(claims, "email", userEmail);
-                userProfileImg = getClaimOrFallback(claims, "profileImg", userProfileImg);
-                userRoles = getClaimOrFallback(claims, "roles", userRoles);
-                log.info("[Gateway Filter] Parsed user identity from token: userId={}, roles={}", userId, userRoles);
-            } catch (Exception e) {
-                log.warn("[Gateway Filter] Token parsing failed (continuing with fallback user): {}", e.getMessage());
-            }
-        }
-
-        log.info("[Gateway Filter] Forwarding with headers: userId={}, roles={}", userId, userRoles);
+        log.info("[Gateway Filter] Forwarding with default headers: userId={}, roles={}", userId, userRoles);
 
         // Mutate request to inject identity headers for downstream services
         ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
@@ -83,11 +54,6 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
                 .build();
 
         return chain.filter(exchange.mutate().request(mutatedRequest).build());
-    }
-
-    private String getClaimOrFallback(Claims claims, String key, String fallback) {
-        Object val = claims.get(key);
-        return val != null ? val.toString() : fallback;
     }
 
     @Override
