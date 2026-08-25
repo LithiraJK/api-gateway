@@ -41,30 +41,22 @@ spring:
       # Each route forwards matching requests to the named Eureka service
       # using a load-balanced lb:// URI.
       routes:
-
-        # ─── User & Auth Service ──────────────────────────────────────────
-        - id: user-service
-          uri: lb://USER-SERVICE
-          predicates:
-            - Path=/auth, /auth/**, /user, /user/**, /users, /users/**, /api/users, /api/users/**, /api/v1/auth, /api/v1/auth/**, /api/v1/users, /api/v1/users/**, /api/v1/dashboard, /api/v1/dashboard/**, /dashboard, /dashboard/**
-
-        # ─── Trip Service ──────────────────────────────────────────
         - id: trip-service
           uri: lb://TRIP-SERVICE
           predicates:
-            - Path=/trip, /trip/**, /trips, /trips/**, /api/trips, /api/trips/**, /api/v1/trip, /api/v1/trip/**
-
-        # ─── Payment Service ───────────────────────────────────────
-        - id: payment-service
-          uri: lb://PAYMENT-SERVICE
-          predicates:
-            - Path=/payment, /payment/**, /payments, /payments/**, /api/payments, /api/payments/**, /api/v1/payment, /api/v1/payment/**, /api/v1/payments, /api/v1/payments/**
-
-        # ─── Review Service ────────────────────────────────────────
+            - Path=/trip/**, /trips/**, /api/trips/**, /api/v1/trip/**
         - id: review-service
           uri: lb://REVIEW-SERVICE
           predicates:
-            - Path=/review, /review/**, /reviews, /reviews/**, /api/reviews, /api/reviews/**, /api/v1/reviews, /api/v1/reviews/**, /api/v1/review, /api/v1/review/**
+            - Path=/review/**, /reviews/**, /api/reviews/**
+        - id: user-service
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/user/**, /users/**, /auth/**, /api/users/**, /api/v1/auth/**, /api/v1/dashboard/**, /dashboard/**
+        - id: payment-service
+          uri: lb://PAYMENT-SERVICE
+          predicates:
+            - Path=/payment/**, /payments/**, /api/payments/**
 
       # ── Global CORS Policy ──────────────────────────────────────
       # Centralised here so individual services don't need their own CORS config.
